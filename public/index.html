@@ -3,180 +3,694 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>WCAG AA Accessibility Checker</title>
+    <title>Adler University Accessibility Checker</title>
+
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="https://www.adler.edu/wp-content/uploads/2025/07/favicon-150x150.png"
+    />
+
     <style>
-      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 24px; max-width: 980px; }
-      label { display: block; margin-bottom: 8px; font-weight: 600; }
-      input[type="url"] { width: 100%; padding: 10px; font-size: 16px; }
-      button { padding: 10px 14px; font-size: 16px; cursor: pointer; }
-      .row { display: flex; gap: 12px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
-      .card { border: 1px solid #ddd; border-radius: 10px; padding: 14px; margin-top: 16px; }
-      .muted { color: #555; }
-      pre { white-space: pre-wrap; word-break: break-word; background: #f7f7f7; padding: 12px; border-radius: 10px; }
-      .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; border: 1px solid #ccc; margin-left: 6px; font-size: 12px; }
+      :root {
+        --adler-red: #b91c1c;
+        --adler-charcoal: #111827;
+        --adler-gray-100: #f3f4f6;
+        --adler-gray-200: #e5e7eb;
+        --adler-gray-400: #9ca3af;
+        --adler-gray-600: #4b5563;
+
+        --radius-lg: 16px;
+        --radius-md: 10px;
+      }
+
+      * {
+        box-sizing: border-box;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--adler-gray-100);
+        color: var(--adler-charcoal);
+        display: flex;
+        justify-content: center;
+        padding: 32px 16px;
+      }
+
+      .wrapper {
+        width: 100%;
+        max-width: 1200px;
+      }
+
+      .card {
+        background: #ffffff;
+        padding: 20px 20px 18px;
+        border: 1px solid var(--adler-gray-200);
+        border-radius: var(--radius-lg);
+        box-shadow: 0 14px 30px rgba(15, 23, 42, 0.06);
+      }
+
+      /* Top header */
+      .site-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 18px;
+        gap: 16px;
+      }
+
+      .site-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .brand-mark {
+        width: 32px;
+        height: 32px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        padding: 0;
+        border-radius: 8px;
+      }
+
+      .brand-mark img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .brand-text {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .brand-text-main {
+        font-size: 1.05rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .brand-text-sub {
+        font-size: 0.8rem;
+        color: var(--adler-gray-600);
+      }
+
+      .tool-title {
+        text-align: right;
+      }
+
+      .tool-title-main {
+        font-size: 1.2rem;
+        font-weight: 600;
+      }
+
+      .tool-title-sub {
+        font-size: 0.85rem;
+        color: var(--adler-gray-600);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.25fr) minmax(0, 1.25fr);
+        gap: 18px;
+      }
+
+      @media (max-width: 900px) {
+        body {
+          padding-top: 20px;
+        }
+
+        .grid {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        .tool-title {
+          text-align: left;
+        }
+      }
+
+      .panel {
+        background: #ffffff;
+        border: 1px solid var(--adler-gray-200);
+        border-radius: var(--radius-lg);
+        padding: 14px;
+      }
+
+      .panel-title {
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.09em;
+        color: var(--adler-gray-600);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .field-group {
+        margin-bottom: 12px;
+      }
+
+      .field-group.inline {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 10px;
+      }
+
+      label {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 500;
+        margin-bottom: 4px;
+        color: var(--adler-gray-600);
+      }
+
+      input[type="url"],
+      input[type="number"] {
+        width: 100%;
+        padding: 8px 10px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--adler-gray-200);
+        background: #ffffff;
+        color: var(--adler-charcoal);
+        font-size: 0.9rem;
+        outline: none;
+        transition: border-color 0.14s ease, box-shadow 0.14s ease;
+      }
+
+      input[type="url"]::placeholder {
+        color: var(--adler-gray-400);
+        font-size: 0.85rem;
+      }
+
+      input[type="url"]:focus,
+      input[type="number"]:focus {
+        border-color: var(--adler-red);
+        box-shadow: 0 0 0 1px rgba(185, 28, 28, 0.18);
+      }
+
+      .hint {
+        font-size: 0.75rem;
+        color: var(--adler-gray-600);
+        margin-top: 4px;
+      }
+
+      .toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.8rem;
+        color: var(--adler-gray-600);
+        user-select: none;
+      }
+
+      .toggle input {
+        transform: translateY(1px);
+      }
+
+      .button-row {
+        margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      button {
+        border: none;
+        font-size: 0.9rem;
+        padding: 8px 16px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+        transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease,
+          color 0.12s ease, border-color 0.12s ease, opacity 0.12s ease;
+        border-radius: var(--radius-md);
+      }
+
+      button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+
+      button.primary {
+        background: var(--adler-red);
+        color: #ffffff;
+        box-shadow: 0 10px 20px rgba(185, 28, 28, 0.25);
+      }
+
+      button.primary:hover {
+        background: #991b1b;
+        transform: translateY(-1px);
+        box-shadow: 0 14px 26px rgba(185, 28, 28, 0.3);
+      }
+
+      button.secondary {
+        background: #ffffff;
+        color: var(--adler-gray-600);
+        border: 1px solid var(--adler-gray-200);
+        box-shadow: none;
+      }
+
+      button.secondary:hover {
+        border-color: var(--adler-gray-400);
+        transform: translateY(-1px);
+      }
+
+      .status {
+        font-size: 0.8rem;
+        color: #059669;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        margin-left: auto;
+      }
+
+      .status.show {
+        opacity: 1;
+      }
+
+      .output-box {
+        background: #ffffff;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--adler-gray-200);
+        padding: 10px 12px;
+        font-size: 0.88rem;
+        color: var(--adler-charcoal);
+        word-break: break-word;
+        min-height: 46px;
+      }
+
+      .output-box.empty {
+        color: var(--adler-gray-400);
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid var(--adler-gray-200);
+        background: var(--adler-gray-100);
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 0.75rem;
+        color: var(--adler-gray-600);
+      }
+
+      .pill strong {
+        color: var(--adler-charcoal);
+        font-weight: 600;
+      }
+
+      .pill-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .result-block {
+        margin-top: 12px;
+      }
+
+      .result-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+
+      .section-subtitle {
+        font-size: 0.85rem;
+        color: var(--adler-gray-600);
+      }
+
+      .link {
+        color: var(--adler-red);
+        text-decoration: none;
+        font-size: 0.85rem;
+      }
+
+      .link:hover {
+        text-decoration: underline;
+      }
+
+      details {
+        margin-top: 10px;
+        border: 1px solid var(--adler-gray-200);
+        border-radius: var(--radius-md);
+        padding: 10px 12px;
+        background: #fff;
+      }
+
+      summary {
+        cursor: pointer;
+        font-weight: 600;
+        color: var(--adler-charcoal);
+      }
+
+      pre {
+        white-space: pre-wrap;
+        word-break: break-word;
+        background: var(--adler-gray-100);
+        padding: 12px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--adler-gray-200);
+        margin-top: 10px;
+        font-size: 0.78rem;
+        color: var(--adler-charcoal);
+      }
+
+      .utility-tag {
+        margin-top: 12px;
+        font-size: 0.75rem;
+        color: var(--adler-gray-600);
+        text-align: right;
+      }
+
+      .error {
+        margin-top: 6px;
+        font-size: 0.8rem;
+        color: var(--adler-red);
+      }
     </style>
   </head>
+
   <body>
-    <h1>WCAG AA Accessibility Checker</h1>
-    <p class="muted">Runs automated WCAG 2.x A + AA rules using Playwright + axe-core.</p>
+    <div class="wrapper">
+      <div class="card">
+        <header class="site-header">
+          <div class="site-brand">
+            <div class="brand-mark">
+              <img
+                src="https://www.adler.edu/wp-content/uploads/2025/07/favicon-300x300.png"
+                alt="Adler University favicon"
+              />
+            </div>
+            <div class="brand-text">
+              <div class="brand-text-main">Adler University</div>
+              <div class="brand-text-sub">Digital &amp; Web Tools</div>
+            </div>
+          </div>
 
-    <label for="url">URL to scan</label>
-    <input id="url" type="url" placeholder="https://example.com" />
+          <div class="tool-title">
+            <div class="tool-title-main">Accessibility Checker</div>
+            <div class="tool-title-sub">Automated WCAG Level AA scans (public URLs)</div>
+          </div>
+        </header>
 
-    <div class="row">
-      <label style="font-weight: 400;">
-        <input id="includePasses" type="checkbox" />
-        Include passes in output
-      </label>
-      <button id="scan">Run page scan</button>
-      <button id="download" disabled>Download JSON</button>
+        <div class="grid">
+          <!-- INPUT PANEL -->
+          <section class="panel">
+            <div class="panel-title">
+              <span>Scan settings</span>
+            </div>
+
+            <div class="field-group">
+              <label for="url">URL to scan</label>
+              <input id="url" type="url" placeholder="https://example.com" />
+              <div class="hint">
+                Tip: Use a full page URL. For site scans, this will be the start page for crawling.
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="toggle">
+                <input id="includePasses" type="checkbox" />
+                Include passes in JSON output (optional)
+              </label>
+            </div>
+
+            <div class="panel-title" style="margin-top: 18px;">
+              <span>Site crawl (batch scan)</span>
+            </div>
+
+            <div class="field-group inline">
+              <div>
+                <label for="maxPages">Max pages</label>
+                <input id="maxPages" type="number" value="25" min="1" max="200" />
+                <div class="hint">Recommended: 25 for quick scans, 100 for deeper audits.</div>
+              </div>
+
+              <div>
+                <label for="maxDepth">Max depth</label>
+                <input id="maxDepth" type="number" value="2" min="0" max="10" />
+                <div class="hint">Recommended: 2. Higher values increase scan time.</div>
+              </div>
+            </div>
+
+            <div class="button-row">
+              <button id="scanPageBtn" type="button" class="primary">Run page scan</button>
+              <button id="scanSiteBtn" type="button" class="secondary">Run site scan (crawl)</button>
+              <button id="downloadJsonBtn" type="button" class="secondary" disabled>Download JSON</button>
+            </div>
+
+            <div id="errorBox" class="error" style="display:none;"></div>
+          </section>
+
+          <!-- OUTPUT PANEL -->
+          <section class="panel">
+            <div class="panel-title">
+              <span>Results</span>
+              <span class="status" id="statusText">Copied!</span>
+            </div>
+
+            <div class="section-subtitle">
+              For site scans, you’ll receive a shareable HTML report designed for non-technical stakeholders.
+            </div>
+
+            <div class="result-block" id="siteResult" style="display:none;">
+              <div class="result-title">
+                <strong>Site scan</strong>
+              </div>
+              <div id="siteSummary" class="output-box empty">No site scan yet.</div>
+              <div style="margin-top: 10px; display:flex; gap:10px; flex-wrap:wrap;">
+                <a id="htmlReportLink" class="link" href="#" target="_blank" rel="noreferrer" style="display:none;">
+                  Open HTML report
+                </a>
+                <a id="jsonReportLink" class="link" href="#" target="_blank" rel="noreferrer" style="display:none;">
+                  Download JSON report
+                </a>
+              </div>
+            </div>
+
+            <div class="result-block" id="pageResult" style="display:none;">
+              <div class="result-title">
+                <strong>Page scan</strong>
+              </div>
+
+              <div class="pill-row" id="pillRow" style="margin-bottom: 10px;"></div>
+
+              <div id="outputBox" class="output-box empty">
+                Page scan output will appear here.
+              </div>
+
+              <details id="rawJsonDetails" style="display:none;">
+                <summary>Raw JSON (technical)</summary>
+                <pre id="rawJsonPre"></pre>
+              </details>
+            </div>
+
+            <div class="utility-tag">
+              Internal utility · Automated checks only (manual review still required)
+            </div>
+          </section>
+        </div>
+      </div>
     </div>
-
-    <div class="row">
-      <label style="font-weight: 400;">
-        Max pages:
-        <input id="maxPages" type="number" value="25" min="1" max="200" style="width:90px; padding:6px;" />
-      </label>
-      <label style="font-weight: 400;">
-        Max depth:
-        <input id="maxDepth" type="number" value="2" min="0" max="10" style="width:70px; padding:6px;" />
-      </label>
-      <button id="scanSite">Run site scan (crawl)</button>
-    </div>
-
-    <div id="siteResult" class="card" style="display:none;"></div>
-    <div id="summary" class="card" style="display:none;"></div>
-    <div id="details" class="card" style="display:none;"></div>
 
     <script>
       const $ = (id) => document.getElementById(id);
 
-      let lastReport = null;
+      const urlEl = $("url");
+      const includePassesEl = $("includePasses");
 
-      function escapeHtml(str) {
-        return str.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
-      }
+      const maxPagesEl = $("maxPages");
+      const maxDepthEl = $("maxDepth");
 
-      function render(report) {
-        const { url, timestamp, results } = report;
-        const v = results.violations?.length ?? 0;
-        const inc = results.incomplete?.length ?? 0;
-        const p = results.passes?.length ?? 0;
+      const scanPageBtn = $("scanPageBtn");
+      const scanSiteBtn = $("scanSiteBtn");
+      const downloadJsonBtn = $("downloadJsonBtn");
 
-        $("summary").style.display = "block";
-        $("summary").innerHTML = `
-          <div><strong>Scanned:</strong> ${escapeHtml(url)}</div>
-          <div><strong>When:</strong> ${escapeHtml(timestamp)}</div>
-          <div style="margin-top:10px;">
-            <strong>Violations:</strong> ${v}
-            <span class="pill">AA focus</span>
-            <br/>
-            <strong>Incomplete:</strong> ${inc}
-            ${results.passes ? `<br/><strong>Passes:</strong> ${p}` : ""}
-          </div>
-        `;
+      const errorBox = $("errorBox");
 
-        const violationsHtml = (results.violations || []).map((rule) => {
-          const nodes = (rule.nodes || []).map((n) => {
-            const targets = (n.target || []).map(t => `<code>${escapeHtml(t)}</code>`).join(", ");
-            const failure = n.failureSummary ? `<div class="muted">${escapeHtml(n.failureSummary)}</div>` : "";
-            return `
-              <li>
-                <div><strong>Target:</strong> ${targets}</div>
-                ${failure}
-              </li>
-            `;
-          }).join("");
+      const siteResult = $("siteResult");
+      const siteSummary = $("siteSummary");
+      const htmlReportLink = $("htmlReportLink");
+      const jsonReportLink = $("jsonReportLink");
 
-          return `
-            <div style="margin-top:14px;">
-              <div>
-                <strong>${escapeHtml(rule.id)}</strong>
-                <span class="pill">${escapeHtml(rule.impact || "unknown")}</span>
-              </div>
-              <div class="muted">${escapeHtml(rule.description || "")}</div>
-              <div><strong>Help:</strong> <a href="${escapeHtml(rule.helpUrl)}" target="_blank" rel="noreferrer">${escapeHtml(rule.help)}</a></div>
-              ${rule.tags?.length ? `<div class="muted"><strong>Tags:</strong> ${rule.tags.map(escapeHtml).join(", ")}</div>` : ""}
-              <ul>${nodes}</ul>
-            </div>
-          `;
-        }).join("");
+      const pageResult = $("pageResult");
+      const pillRow = $("pillRow");
+      const outputBox = $("outputBox");
+      const rawJsonDetails = $("rawJsonDetails");
+      const rawJsonPre = $("rawJsonPre");
 
-        $("details").style.display = "block";
-        $("details").innerHTML = `
-          <h2 style="margin-top:0;">Violations</h2>
-          ${v ? violationsHtml : "<div>No violations detected by automated rules.</div>"}
-          <h2>Raw JSON</h2>
-          <pre>${escapeHtml(JSON.stringify(report, null, 2))}</pre>
-        `;
-      }
+      let lastPageReport = null;
 
-      $("scan").addEventListener("click", async () => {
-        const url = $("url").value.trim();
-        $("download").disabled = true;
-        lastReport = null;
-
-        $("summary").style.display = "block";
-        $("summary").textContent = "Scanning page...";
-        $("details").style.display = "none";
-
-        const resp = await fetch("/api/scan", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url, includePasses: $("includePasses").checked })
-        });
-
-        const data = await resp.json();
-        if (!resp.ok) {
-          $("summary").textContent = `Error: ${data.error || "Unknown"} ${data.details ? " - " + data.details : ""}`;
+      function showError(message) {
+        if (!message) {
+          errorBox.style.display = "none";
+          errorBox.textContent = "";
           return;
         }
+        errorBox.style.display = "block";
+        errorBox.textContent = message;
+      }
 
-        lastReport = data;
-        $("download").disabled = false;
-        render(data);
-      });
+      function escapeHtml(str) {
+        return String(str).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+      }
 
-      $("download").addEventListener("click", () => {
-        if (!lastReport) return;
-        const blob = new Blob([JSON.stringify(lastReport, null, 2)], { type: "application/json" });
+      function setLoading(button, isLoading, labelWhenIdle) {
+        button.disabled = isLoading;
+        button.textContent = isLoading ? "Working..." : labelWhenIdle;
+      }
+
+      function renderPills(report) {
+        pillRow.innerHTML = "";
+
+        const v = report?.results?.violations?.length ?? 0;
+        const inc = report?.results?.incomplete?.length ?? 0;
+        const p = report?.results?.passes?.length ?? 0;
+
+        const items = [
+          ["Violations", v],
+          ["Needs review", inc]
+        ];
+
+        if (report?.results?.passes) items.push(["Passes", p]);
+
+        items.forEach(([k, val]) => {
+          const pill = document.createElement("div");
+          pill.className = "pill";
+          pill.innerHTML = `<strong>${escapeHtml(k)}:</strong> <span>${val}</span>`;
+          pillRow.appendChild(pill);
+        });
+      }
+
+      function renderPageReport(report) {
+        pageResult.style.display = "block";
+        outputBox.classList.remove("empty");
+        outputBox.innerHTML = `
+          <div><strong>Scanned:</strong> ${escapeHtml(report.url)}</div>
+          <div class="hint" style="margin-top:6px;"><strong>Timestamp:</strong> ${escapeHtml(report.timestamp)}</div>
+        `;
+
+        renderPills(report);
+
+        rawJsonDetails.style.display = "block";
+        rawJsonPre.innerHTML = escapeHtml(JSON.stringify(report, null, 2));
+      }
+
+      downloadJsonBtn.addEventListener("click", () => {
+        if (!lastPageReport) return;
+        const blob = new Blob([JSON.stringify(lastPageReport, null, 2)], { type: "application/json" });
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
-        a.download = "a11y-report.json";
+        a.download = "a11y-page-report.json";
         a.click();
         URL.revokeObjectURL(a.href);
       });
 
-      $("scanSite").addEventListener("click", async () => {
-        const startUrl = $("url").value.trim();
-        const maxPages = Number($("maxPages").value || 25);
-        const maxDepth = Number($("maxDepth").value || 2);
+      scanPageBtn.addEventListener("click", async () => {
+        showError("");
+        lastPageReport = null;
+        downloadJsonBtn.disabled = true;
 
-        $("siteResult").style.display = "block";
-        $("siteResult").textContent = "Crawling and scanning site...";
-
-        const resp = await fetch("/api/scan-site", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ startUrl, maxPages, maxDepth })
-        });
-
-        const data = await resp.json();
-        if (!resp.ok) {
-          $("siteResult").textContent = `Error: ${data.error || "Unknown"} ${data.details ? " - " + data.details : ""}`;
+        const url = urlEl.value.trim();
+        if (!url) {
+          showError("Please enter a URL to scan.");
           return;
         }
 
-        $("siteResult").innerHTML = `
-          <h2 style="margin-top:0;">Site report ready</h2>
-          <div><strong>Pages scanned:</strong> ${data.summary.pagesScanned}</div>
-          <div><strong>Total violations:</strong> ${data.summary.totalViolations}</div>
-          <div style="margin-top:10px;">
-            <a href="${data.htmlUrl}" target="_blank" rel="noreferrer"><strong>Open HTML report</strong></a>
-            <span class="muted"> | </span>
-            <a href="${data.jsonUrl}" target="_blank" rel="noreferrer">Download JSON</a>
-          </div>
-        `;
+        setLoading(scanPageBtn, true, "Run page scan");
+        setLoading(scanSiteBtn, true, "Run site scan (crawl)");
+
+        try {
+          const resp = await fetch("/api/scan", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url, includePasses: includePassesEl.checked })
+          });
+
+          const data = await resp.json();
+          if (!resp.ok) {
+            showError(`${data.error || "Scan failed"}${data.details ? " - " + data.details : ""}`);
+            return;
+          }
+
+          lastPageReport = data;
+          downloadJsonBtn.disabled = false;
+          renderPageReport(data);
+        } finally {
+          setLoading(scanPageBtn, false, "Run page scan");
+          setLoading(scanSiteBtn, false, "Run site scan (crawl)");
+        }
+      });
+
+      scanSiteBtn.addEventListener("click", async () => {
+        showError("");
+
+        const startUrl = urlEl.value.trim();
+        if (!startUrl) {
+          showError("Please enter a URL to scan.");
+          return;
+        }
+
+        const maxPages = Number(maxPagesEl.value || 25);
+        const maxDepth = Number(maxDepthEl.value || 2);
+
+        siteResult.style.display = "block";
+        siteSummary.classList.remove("empty");
+        siteSummary.textContent = "Crawling and scanning site... this may take a few minutes.";
+        htmlReportLink.style.display = "none";
+        jsonReportLink.style.display = "none";
+
+        setLoading(scanPageBtn, true, "Run page scan");
+        setLoading(scanSiteBtn, true, "Run site scan (crawl)");
+
+        try {
+          const resp = await fetch("/api/scan-site", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ startUrl, maxPages, maxDepth })
+          });
+
+          const data = await resp.json();
+          if (!resp.ok) {
+            showError(`${data.error || "Site scan failed"}${data.details ? " - " + data.details : ""}`);
+            siteSummary.textContent = "Site scan failed.";
+            return;
+          }
+
+          siteSummary.innerHTML = `
+            <div><strong>Start URL:</strong> ${escapeHtml(data.summary.startUrl)}</div>
+            <div><strong>Pages scanned:</strong> ${data.summary.pagesScanned}</div>
+            <div><strong>Total violations:</strong> ${data.summary.totalViolations}</div>
+            <div class="hint" style="margin-top:6px;"><strong>Timestamp:</strong> ${escapeHtml(
+              data.summary.scannedAt
+            )}</div>
+          `;
+
+          htmlReportLink.href = data.htmlUrl;
+          jsonReportLink.href = data.jsonUrl;
+
+          htmlReportLink.style.display = "inline";
+          jsonReportLink.style.display = "inline";
+        } finally {
+          setLoading(scanPageBtn, false, "Run page scan");
+          setLoading(scanSiteBtn, false, "Run site scan (crawl)");
+        }
       });
     </script>
   </body>
