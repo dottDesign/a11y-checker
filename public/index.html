@@ -438,7 +438,7 @@
             <div class="field-group inline">
               <div>
                 <label for="maxPages">Max pages</label>
-                <input id="maxPages" type="number" value="1" min="1" max="200" />
+                <input id="maxPages" type="number" value="25" min="1" max="200" />
                 <div class="hint">Recommended: 25 for quick scans, 100 for deeper audits.</div>
               </div>
 
@@ -450,7 +450,7 @@
             </div>
 
             <div class="button-row">
-              <!-- <button id="scanPageBtn" type="button" class="primary">Run page scan</button> -->
+              <button id="scanPageBtn" type="button" class="primary">Run page scan</button> 
               <button id="scanSiteBtn" type="button" class="secondary">Run Scan</button>
               <button id="downloadJsonBtn" type="button" class="secondary" disabled>Download JSON</button>
             </div>
@@ -501,7 +501,9 @@
               </details>
             </div>
 
-           
+            <div class="utility-tag">
+              Internal utility · Automated checks only (manual review still required)
+            </div>
           </section>
         </div>
       </div>
