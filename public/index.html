@@ -481,6 +481,9 @@
                 <a id="htmlReportLink" class="link" href="#" target="_blank" rel="noreferrer" style="display:none;">
                   Open HTML report
                 </a>
+                <a id="pdfReportLink" class="link" href="#" target="_blank" rel="noreferrer" style="display:none;">
+  Download PDF report
+</a>
                 <a id="jsonReportLink" class="link" href="#" target="_blank" rel="noreferrer" style="display:none;">
                   Download JSON report
                 </a>
@@ -512,6 +515,7 @@
 
     <script>
       const $ = (id) => document.getElementById(id);
+       const pdfReportLink = $("pdfReportLink");
 
       const urlEl = $("url");
       const includePassesEl = $("includePasses");
@@ -640,59 +644,63 @@
       });
 
       scanSiteBtn.addEventListener("click", async () => {
-        showError("");
+  showError("");
 
-        const startUrl = urlEl.value.trim();
-        if (!startUrl) {
-          showError("Please enter a URL to scan.");
-          return;
-        }
+  const startUrl = urlEl.value.trim();
+  if (!startUrl) {
+    showError("Please enter a URL to scan.");
+    return;
+  }
 
-        const maxPages = Number(maxPagesEl.value || 25);
-        const maxDepth = Number(maxDepthEl.value || 2);
+  const maxPages = Number(maxPagesEl.value || 25);
+  const maxDepth = Number(maxDepthEl.value || 2);
 
-        siteResult.style.display = "block";
-        siteSummary.classList.remove("empty");
-        siteSummary.textContent = "Crawling and scanning site... this may take a few minutes.";
-        htmlReportLink.style.display = "none";
-        jsonReportLink.style.display = "none";
+  siteResult.style.display = "block";
+  siteSummary.classList.remove("empty");
+  siteSummary.textContent = "Crawling and scanning site... this may take a few minutes.";
+  htmlReportLink.style.display = "none";
+  jsonReportLink.style.display = "none";
+  pdfReportLink.style.display = "none";
 
-        setLoading(scanPageBtn, true, "Run page scan");
-        setLoading(scanSiteBtn, true, "Run site scan (crawl)");
+  setLoading(scanPageBtn, true, "Run page scan");
+  setLoading(scanSiteBtn, true, "Run site scan (crawl)");
 
-        try {
-          const resp = await fetch("/api/scan-site", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ startUrl, maxPages, maxDepth })
-          });
+  try {
+    const resp = await fetch("/api/scan-site", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ startUrl, maxPages, maxDepth })
+    });
 
-          const data = await resp.json();
-          if (!resp.ok) {
-            showError(`${data.error || "Site scan failed"}${data.details ? " - " + data.details : ""}`);
-            siteSummary.textContent = "Site scan failed.";
-            return;
-          }
+    const data = await resp.json();
+    if (!resp.ok) {
+      showError(`${data.error || "Site scan failed"}${data.details ? " - " + data.details : ""}`);
+      siteSummary.textContent = "Site scan failed.";
+      return;
+    }
 
-          siteSummary.innerHTML = `
-            <div><strong>Start URL:</strong> ${escapeHtml(data.summary.startUrl)}</div>
-            <div><strong>Pages scanned:</strong> ${data.summary.pagesScanned}</div>
-            <div><strong>Total violations:</strong> ${data.summary.totalViolations}</div>
-            <div class="hint" style="margin-top:6px;"><strong>Timestamp:</strong> ${escapeHtml(
-              data.summary.scannedAt
-            )}</div>
-          `;
+    siteSummary.innerHTML = `
+      <div><strong>Start URL:</strong> ${escapeHtml(data.summary.startUrl)}</div>
+      <div><strong>Pages scanned:</strong> ${data.summary.pagesScanned}</div>
+      <div><strong>Total violations:</strong> ${data.summary.totalViolations}</div>
+      <div class="hint" style="margin-top:6px;"><strong>Timestamp:</strong> ${escapeHtml(
+        data.summary.scannedAt
+      )}</div>
+    `;
 
-          htmlReportLink.href = data.htmlUrl;
-          jsonReportLink.href = data.jsonUrl;
+    htmlReportLink.href = data.htmlUrl;
+    jsonReportLink.href = data.jsonUrl;
 
-          htmlReportLink.style.display = "inline";
-          jsonReportLink.style.display = "inline";
-        } finally {
-          setLoading(scanPageBtn, false, "Run page scan");
-          setLoading(scanSiteBtn, false, "Run site scan (crawl)");
-        }
-      });
+    htmlReportLink.style.display = "inline";
+    jsonReportLink.style.display = "inline";
+
+    pdfReportLink.href = `/reports/${data.reportId}/report.pdf`;
+    pdfReportLink.style.display = "inline";
+  } finally {
+    setLoading(scanPageBtn, false, "Run page scan");
+    setLoading(scanSiteBtn, false, "Run site scan (crawl)");
+  }
+});
     </script>
   </body>
 </html>
