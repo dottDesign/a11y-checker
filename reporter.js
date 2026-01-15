@@ -432,7 +432,7 @@ export function generateHtmlReport({ startUrl, scannedAt, reports }) {
         </div>
         <div class="tool-title">
           <div class="tool-title-main">Accessibility Report</div>
-          <div class="tool-title-sub">Automated WCAG Level AA checks (public URLs)</div>
+            <div class="tool-title-sub">WCAG Level AA scans</div>
         </div>
       </header>
 
@@ -479,7 +479,7 @@ export function generateHtmlReport({ startUrl, scannedAt, reports }) {
           <div class="panel-title">Detailed findings</div>
           ${perPageDetails}
           <div class="footer-note">
-            Notes: This report reflects automated checks aligned to WCAG A and AA rules. Manual review is still required for some criteria.
+            Notes: This report reflects automated checks aligned to WCAG A and AA rules.
           </div>
         </section>
       </div>

@@ -383,6 +383,9 @@
         font-size: 0.8rem;
         color: var(--adler-red);
       }
+      .hide{
+        display:none;
+      }
     </style>
   </head>
 
@@ -405,7 +408,7 @@
 
           <div class="tool-title">
             <div class="tool-title-main">Accessibility Checker</div>
-            <div class="tool-title-sub">Automated WCAG Level AA scans (public URLs)</div>
+            <div class="tool-title-sub">WCAG Level AA scans</div>
           </div>
         </header>
 
@@ -438,20 +441,20 @@
             <div class="field-group inline">
               <div>
                 <label for="maxPages">Max pages</label>
-                <input id="maxPages" type="number" value="25" min="1" max="200" />
+                <input id="maxPages" type="number" value="1" min="1" max="200" />
                 <div class="hint">Recommended: 25 for quick scans, 100 for deeper audits.</div>
               </div>
 
               <div>
                 <label for="maxDepth">Max depth</label>
-                <input id="maxDepth" type="number" value="2" min="0" max="10" />
+                <input id="maxDepth" type="number" value="1" min="0" max="10" />
                 <div class="hint">Recommended: 2. Higher values increase scan time.</div>
               </div>
             </div>
 
             <div class="button-row">
-              <button id="scanPageBtn" type="button" class="primary">Run page scan</button> 
-              <button id="scanSiteBtn" type="button" class="secondary">Run Scan</button>
+              <button id="scanPageBtn" type="button" class="primary hide">Run page scan (JSON output)</button> 
+              <button id="scanSiteBtn" type="button" class="primary">Run Scan</button>
               <button id="downloadJsonBtn" type="button" class="secondary" disabled>Download JSON</button>
             </div>
 
@@ -501,9 +504,7 @@
               </details>
             </div>
 
-            <div class="utility-tag">
-              Internal utility · Automated checks only (manual review still required)
-            </div>
+            
           </section>
         </div>
       </div>
