@@ -93,6 +93,10 @@ app.post("/api/scan-site", async (req, res) => {
 });
 
 const port = process.env.PORT || 8080;
+app.get("/health", (req, res) => {
+  res.status(200).send("ok");
+});
+
 app.listen(port, () => {
   console.log(`a11y-checker running on http://localhost:${port}`);
 });
