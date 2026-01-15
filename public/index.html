@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>WCAG AA Accessibility Checker</title>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 24px; max-width: 980px; }
+      label { display: block; margin-bottom: 8px; font-weight: 600; }
+      input[type="url"] { width: 100%; padding: 10px; font-size: 16px; }
+      button { padding: 10px 14px; font-size: 16px; cursor: pointer; }
+      .row { display: flex; gap: 12px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
+      .card { border: 1px solid #ddd; border-radius: 10px; padding: 14px; margin-top: 16px; }
+      .muted { color: #555; }
+      pre { white-space: pre-wrap; word-break: break-word; background: #f7f7f7; padding: 12px; border-radius: 10px; }
+      .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; border: 1px solid #ccc; margin-left: 6px; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <h1>WCAG AA Accessibility Checker</h1>
+    <p class="muted">Runs automated WCAG 2.x A + AA rules using Playwright + axe-core.</p>
+
+    <label for="url">URL to scan</label>
+    <input id="url" type="url" placeholder="https://example.com" />
+
+    <div class="row">
+      <label style="font-weight: 400;">
+        <input id="includePasses" type="checkbox" />
+        Include passes in output
+      </label>
+      <button id="scan">Run page scan</button>
+      <button id="download" disabled>Download JSON</button>
+    </div>
+
+    <div class="row">
+      <label style="font-weight: 400;">
+        Max pages:
+        <input id="maxPages" type="number" value="25" min="1" max="200" style="width:90px; padding:6px;" />
+      </label>
+      <label style="font-weight: 400;">
+        Max depth:
+        <input id="maxDepth" type="number" value="2" min="0" max="10" style="width:70px; padding:6px;" />
+      </label>
+      <button id="scanSite">Run site scan (crawl)</button>
+    </div>
+
+    <div id="siteResult" class="card" style="display:none;"></div>
+    <div id="summary" class="card" style="display:none;"></div>
+    <div id="details" class="card" style="display:none;"></div>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+
+      let lastReport = null;
+
+      function escapeHtml(str) {
+        return str.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+      }
+
+      function render(report) {
+        const { url, timestamp, results } = report;
+        const v = results.violations?.length ?? 0;
+        const inc = results.incomplete?.length ?? 0;
+        const p = results.passes?.length ?? 0;
+
+        $("summary").style.display = "block";
+        $("summary").innerHTML = `
+          <div><strong>Scanned:</strong> ${escapeHtml(url)}</div>
+          <div><strong>When:</strong> ${escapeHtml(timestamp)}</div>
+          <div style="margin-top:10px;">
+            <strong>Violations:</strong> ${v}
+            <span class="pill">AA focus</span>
+            <br/>
+            <strong>Incomplete:</strong> ${inc}
+            ${results.passes ? `<br/><strong>Passes:</strong> ${p}` : ""}
+          </div>
+        `;
+
+        const violationsHtml = (results.violations || []).map((rule) => {
+          const nodes = (rule.nodes || []).map((n) => {
+            const targets = (n.target || []).map(t => `<code>${escapeHtml(t)}</code>`).join(", ");
+            const failure = n.failureSummary ? `<div class="muted">${escapeHtml(n.failureSummary)}</div>` : "";
+            return `
+              <li>
+                <div><strong>Target:</strong> ${targets}</div>
+                ${failure}
+              </li>
+            `;
+          }).join("");
+
+          return `
+            <div style="margin-top:14px;">
+              <div>
+                <strong>${escapeHtml(rule.id)}</strong>
+                <span class="pill">${escapeHtml(rule.impact || "unknown")}</span>
+              </div>
+              <div class="muted">${escapeHtml(rule.description || "")}</div>
+              <div><strong>Help:</strong> <a href="${escapeHtml(rule.helpUrl)}" target="_blank" rel="noreferrer">${escapeHtml(rule.help)}</a></div>
+              ${rule.tags?.length ? `<div class="muted"><strong>Tags:</strong> ${rule.tags.map(escapeHtml).join(", ")}</div>` : ""}
+              <ul>${nodes}</ul>
+            </div>
+          `;
+        }).join("");
+
+        $("details").style.display = "block";
+        $("details").innerHTML = `
+          <h2 style="margin-top:0;">Violations</h2>
+          ${v ? violationsHtml : "<div>No violations detected by automated rules.</div>"}
+          <h2>Raw JSON</h2>
+          <pre>${escapeHtml(JSON.stringify(report, null, 2))}</pre>
+        `;
+      }
+
+      $("scan").addEventListener("click", async () => {
+        const url = $("url").value.trim();
+        $("download").disabled = true;
+        lastReport = null;
+
+        $("summary").style.display = "block";
+        $("summary").textContent = "Scanning page...";
+        $("details").style.display = "none";
+
+        const resp = await fetch("/api/scan", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url, includePasses: $("includePasses").checked })
+        });
+
+        const data = await resp.json();
+        if (!resp.ok) {
+          $("summary").textContent = `Error: ${data.error || "Unknown"} ${data.details ? " - " + data.details : ""}`;
+          return;
+        }
+
+        lastReport = data;
+        $("download").disabled = false;
+        render(data);
+      });
+
+      $("download").addEventListener("click", () => {
+        if (!lastReport) return;
+        const blob = new Blob([JSON.stringify(lastReport, null, 2)], { type: "application/json" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "a11y-report.json";
+        a.click();
+        URL.revokeObjectURL(a.href);
+      });
+
+      $("scanSite").addEventListener("click", async () => {
+        const startUrl = $("url").value.trim();
+        const maxPages = Number($("maxPages").value || 25);
+        const maxDepth = Number($("maxDepth").value || 2);
+
+        $("siteResult").style.display = "block";
+        $("siteResult").textContent = "Crawling and scanning site...";
+
+        const resp = await fetch("/api/scan-site", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ startUrl, maxPages, maxDepth })
+        });
+
+        const data = await resp.json();
+        if (!resp.ok) {
+          $("siteResult").textContent = `Error: ${data.error || "Unknown"} ${data.details ? " - " + data.details : ""}`;
+          return;
+        }
+
+        $("siteResult").innerHTML = `
+          <h2 style="margin-top:0;">Site report ready</h2>
+          <div><strong>Pages scanned:</strong> ${data.summary.pagesScanned}</div>
+          <div><strong>Total violations:</strong> ${data.summary.totalViolations}</div>
+          <div style="margin-top:10px;">
+            <a href="${data.htmlUrl}" target="_blank" rel="noreferrer"><strong>Open HTML report</strong></a>
+            <span class="muted"> | </span>
+            <a href="${data.jsonUrl}" target="_blank" rel="noreferrer">Download JSON</a>
+          </div>
+        `;
+      });
+    </script>
+  </body>
+</html>
