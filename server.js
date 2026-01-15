@@ -14,6 +14,45 @@ app.use(express.static(path.resolve("./public")));
 
 // Serve generated reports
 app.use("/reports", express.static(path.resolve("./reports")));
+import { chromium } from "playwright";
+
+
+app.get("/reports/:id/report.pdf", async (req, res) => {
+  const { id } = req.params;
+
+  // Render may sit behind a proxy, so this helps build the correct absolute URL
+  app.set("trust proxy", true);
+
+  const baseUrl = `${req.protocol}://${req.get("host")}`;
+  const reportUrl = `${baseUrl}/reports/${id}/report.html`;
+
+  try {
+    const browser = await chromium.launch({ headless: true });
+    const page = await browser.newPage();
+
+    await page.goto(reportUrl, { waitUntil: "networkidle", timeout: 45000 });
+
+    const pdfBuffer = await page.pdf({
+      format: "Letter",
+      printBackground: true,
+      margin: { top: "12mm", right: "12mm", bottom: "12mm", left: "12mm" }
+    });
+
+    await page.close().catch(() => {});
+    await browser.close().catch(() => {});
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="a11y-report-${id}.pdf"`);
+    return res.status(200).send(pdfBuffer);
+  } catch (e) {
+    return res.status(500).json({
+      error: "PDF generation failed.",
+      details: String(e?.message ?? e),
+      reportUrl
+    });
+  }
+});
+
 
 function isValidHttpUrl(value) {
   try {
