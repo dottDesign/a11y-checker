@@ -31,7 +31,12 @@ app.get("/reports/:id/report.pdf", async (req, res) => {
     const page = await browser.newPage();
 
     await page.goto(reportUrl, { waitUntil: "networkidle", timeout: 45000 });
-
+    await page.evaluate(() => {
+  document.querySelectorAll("details").forEach((d) => {
+    d.open = true;
+  });
+});
+    await page.waitForTimeout(250);
     const pdfBuffer = await page.pdf({
       format: "Letter",
       printBackground: true,
